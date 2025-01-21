@@ -3,8 +3,8 @@ import { faker } from '@faker-js/faker';
 const fakeEmail = faker.internet.email();
 const fakePassword = faker.internet.password({ length: 20 });
 
-describe('Présence des champs connexion', () => {
-  it('Redirection vers la page d’accueil après connexion', () => {
+describe('Mauvaise identification', () => {
+  it('Mauvais mot de passe, mauvaise adresse email', () => {
     cy.visit('http://localhost:8080/#/login');
     
     cy.getBySel('login-input-username').type(fakeEmail);
