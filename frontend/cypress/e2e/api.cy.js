@@ -15,10 +15,8 @@ describe('Tests d’API', () => {
   it('Requête de la liste des produits du panier', () => {
     cy.connexion('test2@test.fr', 'testtest').then((token) => {
       cy.obtenirPanier(token).then((panier) => {
-        // Vérifiez que la réponse contient les propriétés attendues
         expect(panier).to.have.property('id');
         expect(panier).to.have.property('firstname');
-        // Ajoutez d'autres propriétés attendues ici
       });
     });
   });
@@ -27,7 +25,6 @@ describe('Tests d’API', () => {
     cy.obtenirIdProduitAleatoire().then((idProduit) => {
       cy.obtenirFicheProduit(idProduit).then((produit) => {
         expect(produit).to.have.property('id', idProduit);
-        // Ajoutez d'autres propriétés attendues ici
       });
     });
   });
