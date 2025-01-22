@@ -1,5 +1,16 @@
 import '../support/api';
 
+describe('Présence des champs et boutons de connexion', () => {
+  it('Présence du formulaire de connexion', () => {
+    cy.visit(``);
+
+    cy.getBySel('nav-link-login').click();
+    cy.getBySel('login-input-username').should('be.visible');
+    cy.getBySel('login-input-password').should('be.visible');
+    cy.getBySel('login-submit').should('be.visible');
+  });
+});
+
 describe('Présence des boutons d’ajout au panier quand utilisateur est déconnecté', () => {
   let idProduit;
 

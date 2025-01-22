@@ -1,4 +1,3 @@
-
 // ***************************************************************************************************************** //
 // *************************************************** Connexion *************************************************** //
 // ***************************************************************************************************************** //
@@ -55,8 +54,24 @@ Cypress.Commands.add('obtenirPanier', (token) => {
 
 
 // ***************************************************************************************************************** //
-// *************************************************** Commandes *************************************************** //
+// **************************************************** Produits *************************************************** //
 // ***************************************************************************************************************** //
+
+/**
+ * Commande pour obtenir la liste de tous les produits
+ * @returns {Promise<Array>} La liste des produits
+ */
+Cypress.Commands.add('obtenirListeProduits', () => {
+    return cy.request({
+        method: 'GET',
+        url: `${Cypress.env('apiUrl')}/products`,
+    }).then((response) => {
+        expect(response.status).to.eq(200);
+        const products = response.body;
+        expect(products).to.have.length.greaterThan(0);
+        return products;
+    });
+});
 
 /**
  * Commande pour obtenir un ID de produit aléatoire
@@ -86,5 +101,66 @@ Cypress.Commands.add('obtenirFicheProduit', (idProduit) => {
     }).then((response) => {
         expect(response.status).to.eq(200);
         return response.body;
+    });
+});
+
+
+// ***************************************************************************************************************** //
+// *************************************************** Commandes *************************************************** //
+// ***************************************************************************************************************** //
+
+/**
+ * Commande pour ajouter un produit au panier
+ * @param {string} token - Le token d'authentification
+ * @param {number} idProduit - L'ID du produit
+ * @param {number} quantite - La quantité du produit à ajouter
+ * @returns {Promise<Object>} La réponse de l'API
+ */
+Cypress.Commands.add('ajouterProduitAuPanier', (token, idProduit, quantite) => {
+    return cy.request({
+        method: 'PUT',
+        url: `${Cypress.env('apiUrl')}/orders/add`,
+        headers: {
+            Authorization: `Bearer ${token}`
+        },
+        body: {
+            product: idProduit,
+            quantity: quantite
+        }
+    }).then((response) => {
+        expect(response.status).to.eq(200);
+        return response.body;
+    });
+});
+
+
+// ***************************************************************************************************************** //
+// ****************************************************** Avis ***************************************************** //
+// ***************************************************************************************************************** //
+
+/**
+ * Commande pour ajouter un avis
+ * @param {string} token - Le token d'authentification
+ * @param {string} title - Le titre de l'avis
+ * @param {string} comment - Le commentaire de l'avis
+ * @param {number} rating - La note de l'avis
+ * @param {Object} options - Options supplémentaires pour la requête
+ * @returns {Promise<Object>} La réponse de l'API
+ */
+Cypress.Commands.add('ajouterAvis', (token, title, comment, rating, options = {}) => {
+    return cy.request({
+        method: 'POST',
+        url: `${Cypress.env('apiUrl')}/reviews`,
+        headers: {
+            Authorization: `Bearer ${token}`
+        },
+        body: {
+            title: title,
+            comment: comment,
+            rating: rating
+        },
+        ...options
+    }).then((response) => {
+        return response;
     });
 });
