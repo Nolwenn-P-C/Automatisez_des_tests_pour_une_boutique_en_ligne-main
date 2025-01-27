@@ -45,7 +45,7 @@ describe('Tests API POST - Mauvaise identification', () => {
     const fakeEmail = faker.internet.email();
     const fakePassword = faker.internet.password({ length: 20 });
 
-    cy.visit('http://localhost:8080/#/login');
+    cy.visit(`/#/login`);
 
     cy.getBySel('login-input-username').type(fakeEmail);
     cy.getBySel('login-input-password').type(fakePassword);
@@ -64,17 +64,17 @@ describe('Tests API POST - Mauvaise identification', () => {
 
 
 
-describe('Test API POST - Connexion reussie', () => {
+describe('Test API POST - Connexion réussie', () => {
   before(() => {
     cy.connexion('test2@test.fr', 'testtest').then((token) => {
-      Cypress.env('authToken', token);
+      cy.definirTokenEtRecharger(token);
     });
   });
 
   it('Doit retourner 200', () => {
     cy.intercept('POST', '**/login').as('loginRequest');
 
-    cy.visit('http://localhost:8080/#/login');
+    cy.visit(`/#/login`);
     cy.get('[data-cy=login-input-username]').type('test2@test.fr');
     cy.get('[data-cy=login-input-password]').type('testtest');
     cy.get('[data-cy=login-submit]').click();
@@ -86,6 +86,7 @@ describe('Test API POST - Connexion reussie', () => {
     cy.url().should('eq', 'http://localhost:8080/#/');
   });
 });
+
 
 
 // ***************************************************************************************************************** //

@@ -27,7 +27,7 @@ Cypress.Commands.add('connexion', (nomUtilisateur, motDePasse) => {
  * @param {string} token - Le token d'authentification
  */
 Cypress.Commands.add('definirTokenEtRecharger', (token) => {
-    cy.visit(Cypress.config('baseUrl'));
+    cy.visit(``);
     cy.window().then((objetFenetre) => {
         objetFenetre.localStorage.setItem('user', JSON.stringify({ token }));
     });
