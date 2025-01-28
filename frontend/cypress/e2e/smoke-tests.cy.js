@@ -35,8 +35,6 @@ describe('Présence des boutons d’ajout au panier quand utilisateur est connec
   });
 
   it('Doit afficher les boutons d’ajout au panier pour un produit aléatoire', () => {
-   
-
     cy.obtenirIdProduitAleatoire().then((idProduit) => {
       cy.visit(`/#/products/${idProduit}`); 
       cy.getBySel('detail-product-add').should('be.visible'); 
@@ -55,7 +53,6 @@ describe('Vérifiez la présence du champ de disponibilité du produit', () => {
   });
 
   it('Doit afficher la disponibilité pour un produit aléatoire', () => {
-
     cy.obtenirIdProduitAleatoire().then((idProduit) => {
       cy.visit(`/#/products/${idProduit}`); 
       cy.getBySel('detail-product-stock').should('be.visible'); 

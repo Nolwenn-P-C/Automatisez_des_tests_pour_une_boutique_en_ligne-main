@@ -34,21 +34,19 @@ Cypress.Commands.add('definirTokenEtRecharger', (token) => {
     cy.reload();
 });
 
+
 /**
- * Commande pour obtenir le panier de l'utilisateur
- * @param {string} token - Le token d'authentification
- * @returns {Promise<Object>} Le contenu du panier
+ * Commande pour vérifier les données confidentielles d'un utilisateur avant connexion
+ * @returns {Promise<Object>} La réponse de l'API
  */
-Cypress.Commands.add('obtenirPanier', (token) => {
+Cypress.Commands.add('verifierDonneesConfidentielles', () => {
     return cy.request({
         method: 'GET',
         url: `${Cypress.env('apiUrl')}/orders`,
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
+        failOnStatusCode: false
     }).then((response) => {
-        expect(response.status).to.eq(200);
-        return response.body;
+        expect(response.status).to.be.oneOf([401, 403]);
+        return response;
     });
 });
 
@@ -67,9 +65,8 @@ Cypress.Commands.add('obtenirListeProduits', () => {
         url: `${Cypress.env('apiUrl')}/products`,
     }).then((response) => {
         expect(response.status).to.eq(200);
-        const products = response.body;
-        expect(products).to.have.length.greaterThan(0);
-        return products;
+        expect(response.body).to.have.length.greaterThan(0);
+        return response.body;
     });
 });
 
@@ -83,9 +80,8 @@ Cypress.Commands.add('obtenirIdProduitAleatoire', () => {
         url: `${Cypress.env('apiUrl')}/products`,
     }).then((response) => {
         expect(response.status).to.eq(200);
-        const products = response.body;
-        expect(products).to.have.length.greaterThan(0);
-        return products[Math.floor(Math.random() * products.length)].id;
+        expect(response.body).to.have.length.greaterThan(0);
+        return response.body[Math.floor(Math.random() * response.body.length)].id;
     });
 });
 
@@ -105,9 +101,29 @@ Cypress.Commands.add('obtenirFicheProduit', (idProduit) => {
 });
 
 
+
 // ***************************************************************************************************************** //
 // *************************************************** Commandes *************************************************** //
 // ***************************************************************************************************************** //
+
+
+/**
+ * Commande pour obtenir le panier de l'utilisateur
+ * @param {string} token - Le token d'authentification
+ * @returns {Promise<Object>} Le contenu du panier
+ */
+Cypress.Commands.add('obtenirPanier', (token) => {
+    return cy.request({
+        method: 'GET',
+        url: `${Cypress.env('apiUrl')}/orders`,
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }).then((response) => {
+        expect(response.status).to.eq(200);
+        return response.body;
+    });
+});
 
 /**
  * Commande pour ajouter un produit au panier

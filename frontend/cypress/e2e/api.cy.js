@@ -8,31 +8,43 @@ import { faker } from '@faker-js/faker';
 
 describe('Tests API GET', () => {
   it('Requête sur les données confidentielles d un utilisateur avant connexion', () => {
-    cy.request({
-      method: 'GET',
-      url: `${Cypress.env('apiUrl')}/orders`,
-      failOnStatusCode: false
-    }).then((response) => {
-      expect(response.status).to.be.oneOf([401, 403]);
-    });
+    cy.verifierDonneesConfidentielles();
   });
 
-  it('Requête de la liste des produits du panier', () => {
-    cy.connexion('test2@test.fr', 'testtest').then((token) => {
-      cy.obtenirPanier(token).then((panier) => {
-        expect(panier).to.have.property('id');
-        expect(panier).to.have.property('firstname');
+  it('Requête de la liste des produits', () => {
+    cy.obtenirListeProduits().then((produits) => {
+      produits.forEach((produit) => {
+        expect(produit).to.have.property('id');
+        expect(produit).to.have.property('name');
+        expect(produit).to.have.property('availableStock');
+        expect(produit).to.have.property('skin');
+        expect(produit).to.have.property('aromas');
+        expect(produit).to.have.property('ingredients');
+        expect(produit).to.have.property('description');
+        expect(produit).to.have.property('price');
+        expect(produit).to.have.property('picture');
+        expect(produit).to.have.property('varieties');
       });
     });
   });
 
   it('Requête d une fiche produit spécifique', () => {
     cy.obtenirIdProduitAleatoire().then((idProduit) => {
-      cy.obtenirFicheProduit(idProduit).then((produit) => {
-        expect(produit).to.have.property('id', idProduit);
-      });
+        cy.obtenirFicheProduit(idProduit).then((produit) => {
+            expect(produit).to.have.property('id', idProduit);
+            expect(produit).to.have.property('name');
+            expect(produit).to.have.property('availableStock');
+            expect(produit).to.have.property('skin');
+            expect(produit).to.have.property('aromas');
+            expect(produit).to.have.property('ingredients');
+            expect(produit).to.have.property('description');
+            expect(produit).to.have.property('price');
+            expect(produit).to.have.property('picture');
+            expect(produit).to.have.property('varieties');
+        });
     });
   });
+
 });
 
 
@@ -53,10 +65,9 @@ describe('Tests API POST - Mauvaise identification', () => {
 
     cy.intercept('POST', '**/login').as('loginRequest');
     cy.wait('@loginRequest').then((interception) => {
-      const { response } = interception;
-      expect(response.statusCode).to.eq(401);
+      expect(interception.response.statusCode).to.eq(401);
     });
-
+    
     cy.get('label[for="username"].error').should('be.visible').and('have.class', 'error');
     cy.get('label[for="password"].error').should('be.visible').and('have.class', 'error');
   });

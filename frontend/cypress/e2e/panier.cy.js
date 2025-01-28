@@ -1,22 +1,15 @@
 import '../support/api';
 
 describe('Vérifiez le processus d’ajout au panier et les limites', () => {
+  
   before(() => {
-    cy.connexion('test2@test.fr', 'testtest').then((reponseToken) => {
-      cy.log('Token reçu :', reponseToken);
-      Cypress.env('token', reponseToken); 
+    cy.connexion('test2@test.fr', 'testtest').then((token) => {
+      Cypress.env('token', token); 
+      cy.definirTokenEtRecharger(token);
     });
   });
 
   it('Vérifiez le processus d’ajout au panier et les limites', () => {
-    const token = Cypress.env('token'); 
-    cy.definirTokenEtRecharger(token);
-
-    cy.window().then((window) => {
-      const userData = JSON.parse(window.localStorage.getItem('user'));
-      expect(userData).to.have.property('token', token);
-    });
-
     cy.obtenirIdProduitAleatoire().then((idProduit) => {
       cy.intercept('GET', `**/products/${idProduit}`).as('getProduct');
       cy.visit(`/#/products/${idProduit}`);
@@ -34,9 +27,7 @@ describe('Vérifiez le processus d’ajout au panier et les limites', () => {
         cy.getBySel('cart-product-name').should('contain', name).and('be.visible');
       });
 
-      cy.window().then((window) => {
-        window.localStorage.setItem('user', JSON.stringify({ token }));
-      });
+      
     });
   });
 });

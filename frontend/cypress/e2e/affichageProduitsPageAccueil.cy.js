@@ -9,16 +9,26 @@ describe('Affichage des produits', () => {
   });
 
 
-  it('Affichage de tous les produits et leurs informations', () => {
+  it('Affichage de tous les produits et leurs informations avec redirection', () => {
     cy.obtenirListeProduits().then((produits) => {
-      cy.visit(`/#/products`); 
+      cy.visit(`/#/products`);
 
       produits.forEach((produit, index) => {
         cy.getBySel('product').eq(index).within(() => {
-          cy.getBySel('product-picture').should('be.visible');
+          cy.getBySel('product-picture').should('have.attr', 'src').and('include', produit.picture);
           cy.getBySel('product-ingredients').should('contain', produit.ingredients);
-          cy.getBySel('product-link').should('be.visible');
+          cy.getBySel('product-link').should('be.visible').click();
         });
+
+        cy.url().should('include', `/#/products/${produit.id}`);
+
+        const formattedPrice = produit.price.toString().replace('.', ',');
+        cy.getBySel('detail-product-price').should(($price) => {
+          const text = $price.text().trim();
+          expect(text).to.include(formattedPrice);
+        });
+
+        cy.visit(`/#/products`);
       });
     });
   });
@@ -29,7 +39,7 @@ describe('Affichage des produits', () => {
       produits.forEach((produit) => {
         cy.visit(`/#/products/${produit.id}`); 
 
-        cy.getBySel('detail-product-img').should('be.visible');
+        cy.getBySel('detail-product-img').should('have.attr', 'src').and('include', produit.picture);
         cy.getBySel('detail-product-description').should('contain', produit.description);
         cy.getBySel('detail-product-stock').should('contain', produit.availableStock + ' en stock');
 
