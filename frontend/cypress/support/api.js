@@ -35,21 +35,6 @@ Cypress.Commands.add('definirTokenEtRecharger', (token) => {
 });
 
 
-/**
- * Commande pour vérifier les données confidentielles d'un utilisateur avant connexion
- * @returns {Promise<Object>} La réponse de l'API
- */
-Cypress.Commands.add('verifierDonneesConfidentielles', () => {
-    return cy.request({
-        method: 'GET',
-        url: `${Cypress.env('apiUrl')}/orders`,
-        failOnStatusCode: false
-    }).then((response) => {
-        expect(response.status).to.be.oneOf([401, 403]);
-        return response;
-    });
-});
-
 
 // ***************************************************************************************************************** //
 // **************************************************** Produits *************************************************** //
@@ -106,6 +91,21 @@ Cypress.Commands.add('obtenirFicheProduit', (idProduit) => {
 // *************************************************** Commandes *************************************************** //
 // ***************************************************************************************************************** //
 
+
+/**
+ * Commande pour vérifier les données confidentielles d'un utilisateur avant connexion
+ * @returns {Promise<Object>} La réponse de l'API
+ */
+Cypress.Commands.add('verifierDonneesConfidentielles', () => {
+    return cy.request({
+        method: 'GET',
+        url: `${Cypress.env('apiUrl')}/orders`,
+        failOnStatusCode: false
+    }).then((response) => {
+        expect(response.status).to.be.oneOf([401, 403]);
+        return response;
+    });
+});
 
 /**
  * Commande pour obtenir le panier de l'utilisateur

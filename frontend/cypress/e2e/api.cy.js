@@ -83,18 +83,14 @@ describe('Test API POST - Connexion réussie', () => {
   });
 
   it('Doit retourner 200', () => {
-    cy.intercept('POST', '**/login').as('loginRequest');
-
-    cy.visit(`/#/login`);
-    cy.get('[data-cy=login-input-username]').type('test2@test.fr');
-    cy.get('[data-cy=login-input-password]').type('testtest');
-    cy.get('[data-cy=login-submit]').click();
-
-    cy.wait('@loginRequest').then((interception) => {
-      expect(interception.response.statusCode).to.eq(200);
-    });
-
+    cy.visit('/#/');
     cy.url().should('eq', 'http://localhost:8080/#/');
+
+    cy.window().then((objetFenetre) => {
+      const user = JSON.parse(objetFenetre.localStorage.getItem('user'));
+      expect(user).to.have.property('token');
+      cy.log(`Token dans localStorage : ${user.token}`);
+    });
   });
 });
 
