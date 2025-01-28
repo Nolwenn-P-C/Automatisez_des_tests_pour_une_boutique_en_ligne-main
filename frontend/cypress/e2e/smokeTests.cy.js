@@ -1,6 +1,6 @@
 import '../support/api';
 
-describe('Présence des champs et boutons de connexion', () => {
+describe('Présence des champs et boutons dans le formulaire de connexion', () => {
   it('Présence du formulaire de connexion', () => {
     cy.visit(``);
 
@@ -13,8 +13,8 @@ describe('Présence des champs et boutons de connexion', () => {
 
 
 
-describe('Présence des boutons d’ajout au panier quand utilisateur est déconnecté', () => {
-  it('Présence des boutons d’ajout au panier pour un produit aléatoire mais absence du bouton panier', () => {
+describe('Présence des boutons d ajout au panier quand utilisateur est déconnecté', () => {
+  it('Présence des boutons d ajout au panier pour un produit aléatoire mais absence du bouton panier', () => {
     cy.obtenirIdProduitAleatoire().then((idProduit) => {
       cy.visit(`/#/products/${idProduit}`);
 
@@ -27,14 +27,14 @@ describe('Présence des boutons d’ajout au panier quand utilisateur est décon
 
 
 
-describe('Présence des boutons d’ajout au panier quand utilisateur est connecté', () => {
+describe('Présence des boutons d ajout au panier quand utilisateur est connecté', () => {
   before(() => {
     cy.connexion('test2@test.fr', 'testtest').then((token) => {
       cy.definirTokenEtRecharger(token);
     });
   });
 
-  it('Doit afficher les boutons d’ajout au panier pour un produit aléatoire', () => {
+  it('Doit afficher les boutons d ajout au panier pour un produit aléatoire', () => {
     cy.obtenirIdProduitAleatoire().then((idProduit) => {
       cy.visit(`/#/products/${idProduit}`); 
       cy.getBySel('detail-product-add').should('be.visible'); 
