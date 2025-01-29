@@ -1,5 +1,6 @@
 import '../support/api';
 
+
 describe('Présence des champs et boutons dans le formulaire de connexion', () => {
   it('Présence du formulaire de connexion', () => {
     cy.visit(``);
@@ -12,7 +13,6 @@ describe('Présence des champs et boutons dans le formulaire de connexion', () =
 });
 
 
-
 describe('Présence des boutons d ajout au panier quand utilisateur est déconnecté', () => {
   it('Présence des boutons d ajout au panier pour un produit aléatoire mais absence du bouton panier', () => {
     cy.obtenirIdProduitAleatoire().then((idProduit) => {
@@ -23,8 +23,6 @@ describe('Présence des boutons d ajout au panier quand utilisateur est déconne
     });
   });
 });
-
-
 
 
 describe('Présence des boutons d ajout au panier quand utilisateur est connecté', () => {
@@ -42,7 +40,6 @@ describe('Présence des boutons d ajout au panier quand utilisateur est connect�
     });
   });
 });
-
 
 
 describe('Vérifiez la présence du champ de disponibilité du produit', () => {

@@ -1,7 +1,7 @@
 import '../support/api';
 
 describe('Affichage des produits', () => {
-
+  
   
   it('Chargement des produits sur la page accueil', () => {
     cy.visit(''); 

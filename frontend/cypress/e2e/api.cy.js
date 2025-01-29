@@ -2,9 +2,11 @@ import '../support/api';
 import { faker } from '@faker-js/faker';
 
 
+
 // ***************************************************************************************************************** //
 // **************************************************** Test GET *************************************************** //
 // ***************************************************************************************************************** //
+
 
 describe('Tests API GET', () => {
   it('Requête sur les données confidentielles d un utilisateur avant connexion', () => {
@@ -48,9 +50,11 @@ describe('Tests API GET', () => {
 });
 
 
+
 // ***************************************************************************************************************** //
 // ********************************************* Tests POST Connexion ********************************************** //
 // ***************************************************************************************************************** //
+
 
 describe('Tests API POST - Mauvaise identification', () => {
   it('Doit retourner une erreur 401', () => {
@@ -59,20 +63,20 @@ describe('Tests API POST - Mauvaise identification', () => {
 
     cy.visit(`/#/login`);
 
+    cy.intercept('POST', '**/login').as('loginRequest');
+
     cy.getBySel('login-input-username').type(fakeEmail);
     cy.getBySel('login-input-password').type(fakePassword);
     cy.getBySel('login-submit').click();
 
-    cy.intercept('POST', '**/login').as('loginRequest');
     cy.wait('@loginRequest').then((interception) => {
       expect(interception.response.statusCode).to.eq(401);
     });
-    
+
     cy.get('label[for="username"].error').should('be.visible').and('have.class', 'error');
     cy.get('label[for="password"].error').should('be.visible').and('have.class', 'error');
   });
 });
-
 
 
 describe('Test API POST - Connexion réussie', () => {
@@ -83,18 +87,14 @@ describe('Test API POST - Connexion réussie', () => {
   });
 
   it('Doit retourner 200', () => {
-    cy.intercept('POST', '**/login').as('loginRequest');
-
-    cy.visit(`/#/login`);
-    cy.get('[data-cy=login-input-username]').type('test2@test.fr');
-    cy.get('[data-cy=login-input-password]').type('testtest');
-    cy.get('[data-cy=login-submit]').click();
-
-    cy.wait('@loginRequest').then((interception) => {
-      expect(interception.response.statusCode).to.eq(200);
-    });
-
+    cy.visit('/#/');
     cy.url().should('eq', 'http://localhost:8080/#/');
+
+    cy.window().then((objetFenetre) => {
+      const user = JSON.parse(objetFenetre.localStorage.getItem('user'));
+      expect(user).to.have.property('token');
+      cy.log(`Token dans localStorage : ${user.token}`);
+    });
   });
 });
 
@@ -105,11 +105,70 @@ describe('Test API POST - Connexion réussie', () => {
 // ***************************************************************************************************************** //
 
 
+describe("Ajout d'un produit en stock au panier", () => {
+  before(() => {
+    cy.intercept('POST', '**/login').as('loginRequest');
+    cy.visit('/#/login');
+    cy.getBySel('login-input-username').type('test2@test.fr');
+    cy.getBySel('login-input-password').type('testtest');
+    cy.getBySel('login-submit').click();
+  });
+
+  it("Ajoute un produit disponible au panier", () => {
+    cy.wait('@loginRequest').its('response.body.token').then((token) => {
+      expect(token).to.not.be.undefined;
+
+      cy.obtenirListeProduits().then((produits) => {
+        const produitEnStock = produits.find(p => p.availableStock > 0);
+        expect(produitEnStock).to.not.be.undefined;
+
+        cy.ajouterProduitAuPanier(token, produitEnStock.id, 1).then((response) => {
+          cy.log('Response Status:', response.status);
+          cy.log('Response Body:', JSON.stringify(response.body));
+
+          expect(response.status).to.eq(200);
+        });
+      });
+    });
+  });
+});
+
+
+describe('Ajout un produit disponible au panier', () => {
+  before(() => {
+    cy.intercept('POST', '**/login').as('loginRequest');
+
+    cy.visit('/#/login');
+    cy.getBySel('login-input-username').type('test2@test.fr');
+    cy.getBySel('login-input-password').type('testtest');
+    cy.getBySel('login-submit').click();
+  });
+
+  it('Ajoute un produit en rupture de stock au panier', () => {
+    cy.wait('@loginRequest').its('response.body.token').then((token) => {
+      expect(token).to.not.be.undefined;
+
+      cy.obtenirListeProduits().then((produits) => {
+        const produitEnRupture = produits.find(p => p.availableStock <= 0);
+
+        cy.wrap(produitEnRupture).should('not.be.undefined').then((produit) => {
+          cy.ajouterProduitAuPanier(token, produit.id, 1).then((response) => {
+            cy.log('Response Status:', response.status);
+            cy.log('Response Body:', JSON.stringify(response.body));
+            expect(response.status).to.not.eq(200);
+          });
+        });
+      });
+    });
+  });
+});
+
 
 
 // ***************************************************************************************************************** //
 // ************************************************* Tests POST Avis *********************************************** //
 // ***************************************************************************************************************** //
+
 
 describe('Tests API POST - Ajout un avis', () => {
 
@@ -125,7 +184,6 @@ describe('Tests API POST - Ajout un avis', () => {
     cy.ajouterAvis(token, '', '', '', { failOnStatusCode: false }).then(response => {
       expect(response.status).to.eq(400);
 
-      // Vérifiez la structure du corps de la réponse
       if (response.body && response.body.error) {
         expect(response.body.error).to.be.an('array').that.is.empty;
       } else {
