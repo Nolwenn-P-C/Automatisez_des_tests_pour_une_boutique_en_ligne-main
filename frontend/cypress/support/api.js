@@ -10,28 +10,18 @@
  * @returns {Promise<string>} Le token d'authentification
  */
 Cypress.Commands.add('connexion', (nomUtilisateur, motDePasse) => {
-    cy.request({
+    return cy.request({
         method: 'POST',
-        url: 'http://localhost:8081/login',
+        url: `${Cypress.env('apiUrl')}/login`,
         body: {
             username: nomUtilisateur,
             password: motDePasse
         }
     }).then((response) => {
         expect(response.status).to.eq(200);
-
-        const token = response.body.token;
-
-        // Stocke le token dans localStorage
-        cy.window().then((win) => {
-            win.localStorage.setItem('user', JSON.stringify({ token }));
-        });
-
-        // Stocke temporairement le token dans Cypress
-        Cypress.env('authToken', token);
+        return response.body.token;
     });
 });
-
 
 
 /**
