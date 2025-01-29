@@ -105,8 +105,8 @@ describe('Test API POST - Connexion réussie', () => {
 // ***************************************************************************************************************** //
 
 
-describe("Ajout d'un produit en stock au panier", () => {
-  before(() => {
+describe("Ajout d'un produit au panier", () => {
+  beforeEach(() => {
     cy.intercept('POST', '**/login').as('loginRequest');
     cy.visit('/#/login');
     cy.getBySel('login-input-username').type('test2@test.fr');
@@ -114,7 +114,7 @@ describe("Ajout d'un produit en stock au panier", () => {
     cy.getBySel('login-submit').click();
   });
 
-  it("Ajoute un produit disponible au panier", () => {
+  it("Ajoute un produit en stock au panier", () => {
     cy.wait('@loginRequest').its('response.body.token').then((token) => {
       expect(token).to.not.be.undefined;
 
@@ -130,18 +130,6 @@ describe("Ajout d'un produit en stock au panier", () => {
         });
       });
     });
-  });
-});
-
-
-describe('Ajout un produit disponible au panier', () => {
-  before(() => {
-    cy.intercept('POST', '**/login').as('loginRequest');
-
-    cy.visit('/#/login');
-    cy.getBySel('login-input-username').type('test2@test.fr');
-    cy.getBySel('login-input-password').type('testtest');
-    cy.getBySel('login-submit').click();
   });
 
   it('Ajoute un produit en rupture de stock au panier', () => {
@@ -161,7 +149,9 @@ describe('Ajout un produit disponible au panier', () => {
       });
     });
   });
+
 });
+
 
 
 
