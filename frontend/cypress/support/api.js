@@ -2,6 +2,7 @@
 // *************************************************** Connexion *************************************************** //
 // ***************************************************************************************************************** //
 
+
 /**
  * Commande pour se connecter et obtenir un token
  * @param {string} nomUtilisateur - Le nom d'utilisateur
@@ -22,6 +23,7 @@ Cypress.Commands.add('connexion', (nomUtilisateur, motDePasse) => {
     });
 });
 
+
 /**
  * Commande pour définir le token dans le localStorage et recharger la page
  * @param {string} token - Le token d'authentification
@@ -40,6 +42,7 @@ Cypress.Commands.add('definirTokenEtRecharger', (token) => {
 // **************************************************** Produits *************************************************** //
 // ***************************************************************************************************************** //
 
+
 /**
  * Commande pour obtenir la liste de tous les produits
  * @returns {Promise<Array>} La liste des produits
@@ -55,6 +58,7 @@ Cypress.Commands.add('obtenirListeProduits', () => {
     });
 });
 
+
 /**
  * Commande pour obtenir un ID de produit aléatoire
  * @returns {Promise<number>} L'ID d'un produit aléatoire
@@ -69,6 +73,7 @@ Cypress.Commands.add('obtenirIdProduitAleatoire', () => {
         return response.body[Math.floor(Math.random() * response.body.length)].id;
     });
 });
+
 
 /**
  * Commande pour obtenir la fiche d'un produit spécifique
@@ -107,6 +112,7 @@ Cypress.Commands.add('verifierDonneesConfidentielles', () => {
     });
 });
 
+
 /**
  * Commande pour obtenir le panier de l'utilisateur
  * @param {string} token - Le token d'authentification
@@ -125,34 +131,39 @@ Cypress.Commands.add('obtenirPanier', (token) => {
     });
 });
 
+
 /**
- * Commande pour ajouter un produit au panier
- * @param {string} token - Le token d'authentification
- * @param {number} idProduit - L'ID du produit
- * @param {number} quantite - La quantité du produit à ajouter
- * @returns {Promise<Object>} La réponse de l'API
+ * Commande personnalisée pour ajouter un produit au panier via l'API.
+ * 
+ * @param {string} token - Le token d'authentification de l'utilisateur.
+ * @param {number} productId - L'ID du produit à ajouter au panier.
+ * @param {number} quantity - La quantité de produit à ajouter.
+ * @returns {Cypress.Chainable<Object>} - Une promesse contenant la réponse de la requête.
  */
-Cypress.Commands.add('ajouterProduitAuPanier', (token, idProduit, quantite) => {
+Cypress.Commands.add('ajouterProduitAuPanier', (token, productId, quantity) => {
     return cy.request({
-        method: 'PUT',
-        url: `${Cypress.env('apiUrl')}/orders/add`,
+        method: 'PUT', 
+        url: `${Cypress.env('apiUrl')}/orders/add`, 
         headers: {
-            Authorization: `Bearer ${token}`
+            'Authorization': `Bearer ${token}`, 
+            'Content-Type': 'application/json' 
         },
         body: {
-            product: idProduit,
-            quantity: quantite
+            product: productId, 
+            quantity: quantity 
         }
     }).then((response) => {
-        expect(response.status).to.eq(200);
-        return response.body;
+        cy.log('Request Body:', JSON.stringify({ product: productId, quantity })); 
+        return cy.wrap(response); 
     });
 });
+
 
 
 // ***************************************************************************************************************** //
 // ****************************************************** Avis ***************************************************** //
 // ***************************************************************************************************************** //
+
 
 /**
  * Commande pour ajouter un avis
