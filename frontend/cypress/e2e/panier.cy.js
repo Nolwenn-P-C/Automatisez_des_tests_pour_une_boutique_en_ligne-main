@@ -101,11 +101,12 @@ describe('Vérifiez les limites d ajout au panier', () => {
         })
       });
     });
-    cy.visit('/#/cart');
-    cy.getBySel('cart-line-delete').click({ multiple: true });
-    cy.getBySel('cart-line-name').should('not.exist');
+  
+  cy.visit('/#/cart');
+  cy.getBySel('cart-line-delete').click({ multiple: true });
+  cy.getBySel('cart-line-name').should('not.exist');
 
-    cy.getBySel('nav-link-logout').click();
+  cy.getBySel('nav-link-logout').click();
   });
 });
 
@@ -148,12 +149,43 @@ describe('Ajout élément au panier (clic bouton ajouter au panier, vérificatio
         });
       });
 
-      cy.visit(`/#/cart`);
-      cy.getBySel('cart-line-delete').click();
-      cy.getBySel('cart-line-name').should('not.exist');
 
       cy.getBySel('nav-link-logout').click();
     });
   });
 });
 
+
+describe('Remise à zéro du panier', () => {
+  before(() => {
+    cy.intercept('POST', '**/login').as('loginRequest');
+
+    cy.visit('/#/login');
+    cy.getBySel('login-input-username').type('test2@test.fr');
+    cy.getBySel('login-input-password').type('testtest');
+    cy.getBySel('login-submit').click();
+
+    cy.wait('@loginRequest').its('response.body.token').then((token) => {
+      cy.wrap(token).as('authToken');
+    });
+  });
+
+  it('Supprimer tous les éléments du panier', function () {
+    cy.obtenirPanier(this.authToken).then((panier) => {
+      const orderLines = panier.orderLines;
+
+      if (orderLines && orderLines.length > 0) {
+        orderLines.forEach((orderLine) => {
+          cy.supprimerElementDuPanier(this.authToken, orderLine.id);
+        });
+      } else {
+        cy.log('Aucun élément dans le panier à supprimer');
+      }
+    });
+
+    cy.visit('/#/cart');
+    cy.getBySel('cart-line-name').should('not.exist');
+
+    cy.getBySel('nav-link-logout').click();
+  });
+});
