@@ -159,6 +159,26 @@ Cypress.Commands.add('ajouterProduitAuPanier', (token, productId, quantity) => {
 });
 
 
+/**
+ * Commande pour supprimer un élément du panier
+ * @param {string} token - Le token d'authentification
+ * @param {number} orderLineId - L'ID de la ligne de commande à supprimer
+ * @returns {Promise<Object>} La réponse de la suppression
+ */
+Cypress.Commands.add('supprimerElementDuPanier', (token, orderLineId) => {
+    return cy.request({
+        method: 'DELETE',
+        url: `${Cypress.env('apiUrl')}/orders/${orderLineId}/delete`,
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }).then((response) => {
+        expect(response.status).to.eq(200);
+        return response.body;
+    });
+});
+
+
 
 // ***************************************************************************************************************** //
 // ****************************************************** Avis ***************************************************** //
