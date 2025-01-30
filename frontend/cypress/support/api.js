@@ -29,9 +29,8 @@ Cypress.Commands.add('connexion', (nomUtilisateur, motDePasse) => {
  * @param {string} token - Le token d'authentification
  */
 Cypress.Commands.add('definirTokenEtRecharger', (token) => {
-    cy.visit(``);
     cy.window().then((objetFenetre) => {
-        objetFenetre.localStorage.setItem('user', JSON.stringify({ token }));
+        objetFenetre.localStorage.setItem('user', token );
     });
     cy.reload();
 });
@@ -107,7 +106,7 @@ Cypress.Commands.add('verifierDonneesConfidentielles', () => {
         url: `${Cypress.env('apiUrl')}/orders`,
         failOnStatusCode: false
     }).then((response) => {
-        expect(response.status).to.be.oneOf([401, 403]);
+        expect(response.status).to.eq(401);
         return response;
     });
 });

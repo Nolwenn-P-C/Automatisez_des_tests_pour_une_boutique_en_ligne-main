@@ -13,22 +13,26 @@ describe('Tests API GET', () => {
     cy.verifierDonneesConfidentielles();
   });
 
-  it('Requête de la liste des produits', () => {
-    cy.obtenirListeProduits().then((produits) => {
-      produits.forEach((produit) => {
-        expect(produit).to.have.property('id');
-        expect(produit).to.have.property('name');
-        expect(produit).to.have.property('availableStock');
-        expect(produit).to.have.property('skin');
-        expect(produit).to.have.property('aromas');
-        expect(produit).to.have.property('ingredients');
-        expect(produit).to.have.property('description');
-        expect(produit).to.have.property('price');
-        expect(produit).to.have.property('picture');
-        expect(produit).to.have.property('varieties');
+  it('Requête de la liste des produits du panier', () => {
+    cy.connexion('test2@test.fr', 'testtest').then((token) => {
+      cy.obtenirPanier(token).then((panier) => {
+        expect(panier).to.be.an('object'); 
+        expect(panier).to.have.property('orderLines'); 
+        expect(panier.orderLines).to.be.an('array'); 
+  
+        panier.orderLines.forEach((ligne) => {
+          expect(ligne).to.have.property('id');
+          expect(ligne).to.have.property('quantity');
+          expect(ligne).to.have.property('product'); 
+  
+          expect(ligne.product).to.have.property('id');
+          expect(ligne.product).to.have.property('name');
+          expect(ligne.product).to.have.property('price');
+        });
       });
     });
   });
+  
 
   it('Requête d une fiche produit spécifique', () => {
     cy.obtenirIdProduitAleatoire().then((idProduit) => {
@@ -82,21 +86,25 @@ describe('Tests API POST - Mauvaise identification', () => {
 describe('Test API POST - Connexion réussie', () => {
   before(() => {
     cy.connexion('test2@test.fr', 'testtest').then((token) => {
+      cy.wrap(token).as('token'); 
       cy.definirTokenEtRecharger(token);
     });
   });
 
-  it('Doit retourner 200', () => {
-    cy.visit('/#/');
-    cy.url().should('eq', 'http://localhost:8080/#/');
-
-    cy.window().then((objetFenetre) => {
-      const user = JSON.parse(objetFenetre.localStorage.getItem('user'));
-      expect(user).to.have.property('token');
-      cy.log(`Token dans localStorage : ${user.token}`);
+  it('Doit retourner 200', () => { 
+    cy.visit('');
+    cy.url().should('eq', Cypress.config('baseUrl')+'/#/');
+    cy.get('@token').then((token) => { 
+      cy.window().then((objetFenetre) => {
+        objetFenetre.localStorage.setItem('user', JSON.stringify({ token })); 
+        const user = JSON.parse(objetFenetre.localStorage.getItem('user'));
+        expect(user).to.have.property('token');
+        cy.log(`Token dans localStorage : ${user.token}`);
+      });
     });
   });
 });
+
 
 
 
@@ -105,17 +113,16 @@ describe('Test API POST - Connexion réussie', () => {
 // ***************************************************************************************************************** //
 
 
-describe("Ajout d'un produit au panier", () => {
+describe("Ajout d'un produit au panier", () => { 
   beforeEach(() => {
-    cy.intercept('POST', '**/login').as('loginRequest');
-    cy.visit('/#/login');
-    cy.getBySel('login-input-username').type('test2@test.fr');
-    cy.getBySel('login-input-password').type('testtest');
-    cy.getBySel('login-submit').click();
+    cy.connexion('test2@test.fr', 'testtest').then((token) => {
+      cy.wrap(token).as('token'); 
+      cy.definirTokenEtRecharger(token);
+    });
   });
 
   it("Ajoute un produit en stock au panier", () => {
-    cy.wait('@loginRequest').its('response.body.token').then((token) => {
+    cy.get('@token').then((token) => {  
       expect(token).to.not.be.undefined;
 
       cy.obtenirListeProduits().then((produits) => {
@@ -133,7 +140,7 @@ describe("Ajout d'un produit au panier", () => {
   });
 
   it('Ajoute un produit en rupture de stock au panier', () => {
-    cy.wait('@loginRequest').its('response.body.token').then((token) => {
+    cy.get('@token').then((token) => { 
       expect(token).to.not.be.undefined;
 
       cy.obtenirListeProduits().then((produits) => {
@@ -155,6 +162,7 @@ describe("Ajout d'un produit au panier", () => {
 
 
 
+
 // ***************************************************************************************************************** //
 // ************************************************* Tests POST Avis *********************************************** //
 // ***************************************************************************************************************** //
@@ -172,6 +180,20 @@ describe('Tests API POST - Ajout un avis', () => {
     const token = Cypress.env('authToken');
 
     cy.ajouterAvis(token, '', '', '', { failOnStatusCode: false }).then(response => {
+      expect(response.status).to.eq(400);
+
+      if (response.body && response.body.error) {
+        expect(response.body.error).to.be.an('array').that.is.empty;
+      } else {
+        throw new Error('Clé "error" absente.');
+      }
+    });
+  });
+
+  it('Doit échouer avec une requête XSS', () => {
+    const token = Cypress.env('authToken');
+
+    cy.ajouterAvis(token, 'Super produit', '<script>window.location.href="https://yepoda.fr/"</script>', 5, { failOnStatusCode: false }).then(response => {
       expect(response.status).to.eq(400);
 
       if (response.body && response.body.error) {

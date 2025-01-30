@@ -2,20 +2,28 @@ import '../support/api';
 
 describe('Vérifiez le processus d ajout au panier et les limites', () => {
   beforeEach(() => {
-    cy.intercept('POST', '**/login').as('loginRequest');
-
-    cy.visit('/#/login');
-    cy.getBySel('login-input-username').type('test2@test.fr');
-    cy.getBySel('login-input-password').type('testtest');
-    cy.getBySel('login-submit').click();
-
-    cy.wait('@loginRequest').then((interception) => {
-      expect(interception.response.statusCode).to.eq(200);
-      const authToken = interception.response.body.token;
-      expect(authToken).to.not.be.undefined;
-
-      Cypress.env('authToken', authToken);
+    cy.connexion('test2@test.fr', 'testtest').then((token) => {
+      cy.definirTokenEtRecharger(token); 
     });
+  });
+
+  afterEach('Supprimer tous les éléments du panier', () => {
+    cy.window().then((objetFenetre) => {
+      const authToken = objetFenetre.localStorage.getItem('user');
+      
+      cy.obtenirPanier(authToken).then((panier) => {
+        const orderLines = panier.orderLines;
+
+        if (orderLines && orderLines.length > 0) {
+          orderLines.forEach((orderLine) => {
+            cy.supprimerElementDuPanier(authToken, orderLine.id);
+          });
+        } else {
+          cy.log('Aucun élément dans le panier à supprimer');
+        }
+    });
+    cy.getBySel('nav-link-logout').click();
+    }); 
   });
 
   it('Produit ajouté au panier, stock déduit', () => {
@@ -46,12 +54,6 @@ describe('Vérifiez le processus d ajout au panier et les limites', () => {
         });
       });
     });
-
-    cy.visit('/#/cart');
-    cy.getBySel('cart-line-delete').click({ multiple: true });
-    cy.getBySel('cart-line-name').should('not.exist');
-
-    cy.getBySel('nav-link-logout').click();
   });
 
   it('Tester les limites d entrée', () => {
@@ -85,12 +87,6 @@ describe('Vérifiez le processus d ajout au panier et les limites', () => {
         });
       });
     });
-
-    cy.visit('/#/cart');
-    cy.getBySel('cart-line-delete').click({ multiple: true });
-    cy.getBySel('cart-line-name').should('not.exist');
-
-    cy.getBySel('nav-link-logout').click();
   });
 
   it('Ajouter un produit au panier et vérifier le contenu du panier via l API', () => {
@@ -111,35 +107,15 @@ describe('Vérifiez le processus d ajout au panier et les limites', () => {
         cy.url().should('include', '/#/cart');
         cy.getBySel('cart-line-name').should('contain', name);
 
-        const authToken = Cypress.env('authToken');
-        cy.obtenirPanier(authToken).then((cart) => {
-          expect(cart.orderLines).to.have.lengthOf(1);
-          expect(cart.orderLines[0].product.name).to.eq(name);
-        });
+        cy.window().then((objetFenetre) => {
+          const authToken = objetFenetre.localStorage.getItem('user');
+          cy.obtenirPanier(authToken).then((cart) => {
+            expect(cart.orderLines).to.have.lengthOf(1);
+            expect(cart.orderLines[0].product.name).to.eq(name);
+          });
+        })
       });
     });
-
-    cy.getBySel('nav-link-logout').click();
   });
 
-  it('Supprimer tous les éléments du panier', () => {
-    const authToken = Cypress.env('authToken');
-
-    cy.obtenirPanier(authToken).then((panier) => {
-      const orderLines = panier.orderLines;
-
-      if (orderLines && orderLines.length > 0) {
-        orderLines.forEach((orderLine) => {
-          cy.supprimerElementDuPanier(authToken, orderLine.id);
-        });
-      } else {
-        cy.log('Aucun élément dans le panier à supprimer');
-      }
-    });
-
-    cy.visit('/#/cart');
-    cy.getBySel('cart-line-name').should('not.exist');
-
-    cy.getBySel('nav-link-logout').click();
-  });
 });

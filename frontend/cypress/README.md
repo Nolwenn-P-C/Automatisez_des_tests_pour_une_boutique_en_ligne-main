@@ -14,7 +14,8 @@ Installer Docker et lancer les services : docker-compose up
 Accéder à Cypress :
     Naviguez jusqu'au dossier frontend : cd frontend
     Installez les dépendances : npm install
-    Ouvrez Cypress : npx cypress open
+    Installer cypress: npm i -g cypress
+    Ouvrez Cypress : npx cypress open ou npx cypress run
 
 ## Utilisation
 
