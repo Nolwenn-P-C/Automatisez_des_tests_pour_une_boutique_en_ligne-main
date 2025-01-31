@@ -13,7 +13,7 @@ describe('Présence des champs et boutons dans le formulaire de connexion', () =
 });
 
 
-describe('Présence des boutons d ajout au panier quand utilisateur est déconnecté', () => {
+describe('Absence du bouton panier quand utilisateur est déconnecté', () => {
   it('Présence des boutons d ajout au panier pour un produit aléatoire mais absence du bouton panier', () => {
     cy.obtenirIdProduitAleatoire().then((idProduit) => {
       cy.visit(`/#/products/${idProduit}`);
@@ -25,14 +25,14 @@ describe('Présence des boutons d ajout au panier quand utilisateur est déconne
 });
 
 
-describe('Présence des boutons d ajout au panier quand utilisateur est connecté', () => {
+describe('Présence du bouton panier quand utilisateur est connecté', () => {
   before(() => {
     cy.connexion('test2@test.fr', 'testtest').then((token) => {
       cy.definirTokenEtRecharger(token);
     });
   });
 
-  it('Doit afficher les boutons d ajout au panier pour un produit aléatoire', () => {
+  it('Doit afficher les boutons d ajout au panier et ainsi que le bouton panier pour un produit aléatoire', () => {
     cy.obtenirIdProduitAleatoire().then((idProduit) => {
       cy.visit(`/#/products/${idProduit}`); 
       cy.getBySel('detail-product-add').should('be.visible'); 
@@ -42,14 +42,19 @@ describe('Présence des boutons d ajout au panier quand utilisateur est connect�
 });
 
 
-describe('Vérifiez la présence du champ de disponibilité du produit', () => {
-  before(() => {
-    cy.connexion('test2@test.fr', 'testtest').then((token) => {
-      cy.definirTokenEtRecharger(token); 
+describe('Vérifie la présence du champ de disponibilité du produit', () => {
+
+  it('Doit afficher la disponibilité pour un produit aléatoire hors connexion', () => {
+    cy.obtenirIdProduitAleatoire().then((idProduit) => {
+      cy.visit(`/#/products/${idProduit}`); 
+      cy.getBySel('detail-product-stock').should('be.visible'); 
     });
   });
 
-  it('Doit afficher la disponibilité pour un produit aléatoire', () => {
+  it('Doit afficher la disponibilité pour un produit aléatoire lorsque l utilisateur est connecter', () => {
+    cy.connexion('test2@test.fr', 'testtest').then((token) => {
+      cy.definirTokenEtRecharger(token); 
+    });
     cy.obtenirIdProduitAleatoire().then((idProduit) => {
       cy.visit(`/#/products/${idProduit}`); 
       cy.getBySel('detail-product-stock').should('be.visible'); 

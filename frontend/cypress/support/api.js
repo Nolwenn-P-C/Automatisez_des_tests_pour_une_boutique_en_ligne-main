@@ -151,8 +151,7 @@ Cypress.Commands.add('ajouterProduitAuPanier', (token, productId, quantity) => {
             product: productId, 
             quantity: quantity 
         }
-    }).then((response) => {
-        cy.log('Request Body:', JSON.stringify({ product: productId, quantity })); 
+    }).then((response) => { 
         return cy.wrap(response); 
     });
 });

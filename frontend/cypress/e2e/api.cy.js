@@ -59,15 +59,15 @@ describe('Tests API GET', () => {
 
 describe('Tests API POST - Mauvaise identification', () => {
   it('Doit retourner une erreur 401', () => {
-    const fakeEmail = faker.internet.email();
-    const fakePassword = faker.internet.password({ length: 20 });
+    const fauxEmail = faker.internet.email();
+    const fauxPassword = faker.internet.password({ length: 20 });
 
     cy.visit(`/#/login`);
 
     cy.intercept('POST', '**/login').as('requeteAuthentification');
 
-    cy.getBySel('login-input-username').type(fakeEmail);
-    cy.getBySel('login-input-password').type(fakePassword);
+    cy.getBySel('login-input-username').type(fauxEmail);
+    cy.getBySel('login-input-password').type(fauxPassword);
     cy.getBySel('login-submit').click();
 
     cy.wait('@requeteAuthentification').then((interception) => {
@@ -96,7 +96,6 @@ describe('Test API POST - Connexion réussie', () => {
         objetFenetre.localStorage.setItem('user', JSON.stringify({ token })); 
         const user = JSON.parse(objetFenetre.localStorage.getItem('user'));
         expect(user).to.have.property('token');
-        cy.log(`Token dans localStorage : ${user.token}`);
       });
     });
   });
