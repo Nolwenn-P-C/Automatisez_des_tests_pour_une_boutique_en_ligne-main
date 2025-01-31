@@ -16,7 +16,7 @@ describe('Affichage des produits', () => {
       produits.forEach((produit, index) => {
         cy.getBySel('product').eq(index).within(() => {
           cy.getBySel('product-picture').should('have.attr', 'src').and('include', produit.picture);
-          cy.getBySel('product-ingredients').should('contain', produit.ingredients);
+          cy.getBySel('product-ingredients').should('contain', produit.description);
           cy.getBySel('product-link').should('be.visible').click();
         });
 

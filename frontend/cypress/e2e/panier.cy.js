@@ -26,12 +26,13 @@ describe('Vérifiez le processus d ajout au panier et les limites', () => {
     }); 
   });
 
+  
   it('Produit ajouté au panier, stock déduit', () => {
     cy.obtenirIdProduitAleatoire().then((idProduit) => {
-      cy.intercept('GET', `**/products/${idProduit}`).as('getProduct');
+      cy.intercept('GET', `**/products/${idProduit}`).as('obtenirProduit');
       cy.visit(`/#/products/${idProduit}`);
 
-      cy.wait('@getProduct').then((interception) => {
+      cy.wait('@obtenirProduit').then((interception) => {
         expect(interception.response.statusCode).to.eq(200);
         const { availableStock, name } = interception.response.body;
 
@@ -45,7 +46,7 @@ describe('Vérifiez le processus d ajout au panier et les limites', () => {
         cy.getBySel('cart-line-name').should('contain', name);
 
         cy.visit(`/#/products/${idProduit}`);
-        cy.wait('@getProduct').then((interception) => {
+        cy.wait('@obtenirProduit').then((interception) => {
           expect(interception.response.statusCode).to.eq(200);
           const { availableStock: updatedStock } = interception.response.body;
           expect(updatedStock).to.eq(availableStock - 1);
@@ -56,12 +57,13 @@ describe('Vérifiez le processus d ajout au panier et les limites', () => {
     });
   });
 
-  it('Tester les limites d entrée', () => {
+
+  it('Tester les limites d entrée négative', () => {
     cy.obtenirIdProduitAleatoire().then((idProduit) => {
-      cy.intercept('GET', `**/products/${idProduit}`).as('getProduct');
+      cy.intercept('GET', `**/products/${idProduit}`).as('obtenirProduit');
       cy.visit(`/#/products/${idProduit}`);
 
-      cy.wait('@getProduct').then((interception) => {
+      cy.wait('@obtenirProduit').then((interception) => {
         expect(interception.response.statusCode).to.eq(200);
         const { availableStock, name } = interception.response.body;
 
@@ -69,32 +71,36 @@ describe('Vérifiez le processus d ajout au panier et les limites', () => {
         cy.getBySel('detail-product-stock').should('contain', availableStock);
 
         cy.getBySel('detail-product-quantity').clear().type('-1');
-        cy.get('button[ng-reflect-ng-if="false"]').should('not.exist');
-
-        cy.getBySel('detail-product-quantity').clear().type('21');
-        cy.getBySel('detail-product-add').click();
-
-        cy.url().should('include', '/#/cart');
-        cy.getBySel('cart-line-name').should('contain', name);
-
-        cy.visit(`/#/products/${idProduit}`);
-        cy.wait('@getProduct').then((interception) => {
-          expect(interception.response.statusCode).to.eq(200);
-          const { availableStock: updatedStock } = interception.response.body;
-          expect(updatedStock).to.eq(availableStock - 21);
-
-          cy.getBySel('detail-product-stock').should('contain', updatedStock);
-        });
+        cy.getBySel('detail-product-quantity').should('have.value','1')
       });
     });
   });
 
-  it('Ajouter un produit au panier et vérifier le contenu du panier via l API', () => {
+  it('Tester les limites d entrée trop importante', () => {
     cy.obtenirIdProduitAleatoire().then((idProduit) => {
-      cy.intercept('GET', `**/products/${idProduit}`).as('getProduct');
+      cy.intercept('GET', `**/products/${idProduit}`).as('obtenirProduit');
       cy.visit(`/#/products/${idProduit}`);
 
-      cy.wait('@getProduct').then((interception) => {
+      cy.wait('@obtenirProduit').then((interception) => {
+        expect(interception.response.statusCode).to.eq(200);
+        const { availableStock, name } = interception.response.body;
+
+        cy.getBySel('detail-product-name').should('contain', name);
+        cy.getBySel('detail-product-stock').should('contain', availableStock);
+
+        cy.getBySel('detail-product-quantity').clear().type('21');
+        cy.getBySel('detail-product-quantity').should('have.value','20')
+      });
+    });
+  });
+
+
+  it('Ajouter un produit au panier et vérifier le contenu du panier via l API', () => {
+    cy.obtenirIdProduitAleatoire().then((idProduit) => {
+      cy.intercept('GET', `**/products/${idProduit}`).as('obtenirProduit');
+      cy.visit(`/#/products/${idProduit}`);
+
+      cy.wait('@obtenirProduit').then((interception) => {
         expect(interception.response.statusCode).to.eq(200);
         const { availableStock, name } = interception.response.body;
 

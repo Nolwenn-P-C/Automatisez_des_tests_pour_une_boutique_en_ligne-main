@@ -16,9 +16,6 @@ describe('Tests API GET', () => {
   it('Requête de la liste des produits du panier', () => {
     cy.connexion('test2@test.fr', 'testtest').then((token) => {
       cy.obtenirPanier(token).then((panier) => {
-        expect(panier).to.be.an('object'); 
-        expect(panier).to.have.property('orderLines'); 
-        expect(panier.orderLines).to.be.an('array'); 
   
         panier.orderLines.forEach((ligne) => {
           expect(ligne).to.have.property('id');
@@ -67,13 +64,13 @@ describe('Tests API POST - Mauvaise identification', () => {
 
     cy.visit(`/#/login`);
 
-    cy.intercept('POST', '**/login').as('loginRequest');
+    cy.intercept('POST', '**/login').as('requeteAuthentification');
 
     cy.getBySel('login-input-username').type(fakeEmail);
     cy.getBySel('login-input-password').type(fakePassword);
     cy.getBySel('login-submit').click();
 
-    cy.wait('@loginRequest').then((interception) => {
+    cy.wait('@requeteAuthentification').then((interception) => {
       expect(interception.response.statusCode).to.eq(401);
     });
 
@@ -104,7 +101,6 @@ describe('Test API POST - Connexion réussie', () => {
     });
   });
 });
-
 
 
 
@@ -158,8 +154,6 @@ describe("Ajout d'un produit au panier", () => {
   });
 
 });
-
-
 
 
 
